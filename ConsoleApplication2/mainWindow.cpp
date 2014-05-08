@@ -104,40 +104,26 @@ void mainWindow::main_loop()
 		button_pushed = false;
 		while (!button_pushed){
 			if (songVec.size() > 0){
+				//allows for seeking using the progress bar
 				if (abs(songVec[playIndex].getPos() - progBar.get_val()) > 1){
 					songVec[playIndex].pause();
 					songVec[playIndex].setPos(progBar.get_val());
 					songVec[playIndex].play();
 				}
+				//updates progress bar
 				progBar.set_val(songVec[playIndex].getPos());
 				currTime.put(seconds2Minutes(songVec[playIndex].getPos()));
+
 				if (songVec[playIndex].isOver()){//checks for end of song
-					songVec[playIndex].stop();
-					nameList[playIndex].unhighlight();
-					artList[playIndex].unhighlight();
-					albList[playIndex].unhighlight();
-					songName.put("");
-					if (playIndex + 1 != songVec.size()){
-						playIndex = (playIndex + 1) % songVec.size();
-						songVec[playIndex].play();
-						songName.put(songVec[playIndex].getName());
-						nameList[playIndex].highlight();
-						artList[playIndex].highlight();
-						albList[playIndex].highlight();
-						songVec[playIndex].setVolume(volumeSlider.get_val());
-					}
-					else{
-						playIndex = (playIndex + 1) % songVec.size();
-						songName.put("");
-						detach(pause_button);
-						attach(play_button);
-					}
+					
+					winState = goNext;
+					break;
 				}
 				if (volumeSlider.is_changed() == true){
 					songVec[playIndex].setVolume(volumeSlider.get_val());
 				}
 			}
-			Fl::check();//wait but also check for end of song
+			Fl::check();//wait but also run while loop
 		}
 		if (winState == goNext){//next song
 			if (!songVec[playIndex].isActive()){
@@ -150,6 +136,7 @@ void mainWindow::main_loop()
 			albList[playIndex].unhighlight();
 
 			playIndex = (playIndex + 1) % songVec.size();
+
 			songVec[playIndex].play();
 			songName.put(songVec[playIndex].getName());
 			nameList[playIndex].highlight();
@@ -157,6 +144,7 @@ void mainWindow::main_loop()
 			albList[playIndex].highlight();
 			songVec[playIndex].setVolume(volumeSlider.get_val());
 			progBar.set_range(0, songVec[playIndex].getLength());
+			progBar.set_val(0);
 			endTime.put(seconds2Minutes(songVec[playIndex].getLength()));
 		}
 		else if (winState == goPrev){//previous song
@@ -164,12 +152,15 @@ void mainWindow::main_loop()
 				detach(play_button);
 				attach(pause_button);
 			}
+
 			songVec[playIndex].stop();
 			nameList[playIndex].unhighlight();
 			artList[playIndex].unhighlight();
 			albList[playIndex].unhighlight();
-			if (playIndex != 0)
+
+			if (playIndex != 0){
 				playIndex = (playIndex - 1) % songVec.size();
+			}
 			else{
 				playIndex = songVec.size() - 1;
 			}
@@ -180,6 +171,7 @@ void mainWindow::main_loop()
 			albList[playIndex].highlight();
 			songVec[playIndex].setVolume(volumeSlider.get_val());
 			progBar.set_range(0, songVec[playIndex].getLength());
+			progBar.set_val(0);
 			endTime.put(seconds2Minutes(songVec[playIndex].getLength()));
 		}
 		else if (winState == goPause){//Pause current Song
@@ -288,6 +280,7 @@ vector<string> mainWindow::fileCollect(string indexFile){
 	return out;
 }
 
+//Formats seconds to minutes and seconds
 string mainWindow::seconds2Minutes(int seconds){
 	int minutes = 0;
 	ostringstream Convert;
@@ -295,10 +288,18 @@ string mainWindow::seconds2Minutes(int seconds){
 		++minutes;
 		seconds -= 60;
 	}
-	if (minutes > 0)
-		Convert << minutes << ":" << seconds;
-	else
-		Convert << seconds;
+	if (minutes > 0){
+		if (seconds > 9)
+			Convert << minutes << ":" << seconds;
+		else
+			Convert << minutes << ":" <<"0"<< seconds;
+	}
+	else{
+		if (seconds > 9)
+			Convert <<"0:"<< seconds;
+		else
+			Convert << "0:0" << seconds;
+	}
 	return Convert.str();
 
 }
