@@ -104,8 +104,11 @@ void mainWindow::main_loop()
 		button_pushed = false;
 		while (!button_pushed){
 			if (songVec.size() > 0){
-				if (abs(songVec[playIndex].getPos() - progBar.get_val()) > 1)
-					cout << "changed" << endl;
+				if (abs(songVec[playIndex].getPos() - progBar.get_val()) > 1){
+					songVec[playIndex].pause();
+					songVec[playIndex].setPos(progBar.get_val());
+					songVec[playIndex].play();
+				}
 				progBar.set_val(songVec[playIndex].getPos());
 				currTime.put(seconds2Minutes(songVec[playIndex].getPos()));
 				if (songVec[playIndex].isOver()){//checks for end of song

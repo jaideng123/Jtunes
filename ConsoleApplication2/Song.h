@@ -111,7 +111,8 @@ public:
 	}
 	void setPos(int pos){//set position in seconds
 		long time = BASS_ChannelSeconds2Bytes(stream, pos);
-		BASS_ChannelSetPosition(stream, BASS_POS_BYTE, time);
+		cout << time << endl;
+		BASS_ChannelSetPosition(stream, time, BASS_POS_BYTE);
 		return;
 	}
 
