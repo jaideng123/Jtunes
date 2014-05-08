@@ -115,7 +115,10 @@ int Menu::attach(Button* p)
 
 void Slider::attach(Window& win)
 {
-	pw = new Fl_Value_Slider(loc.x, loc.y, width, height, label.c_str());
+	pw = new Fl_Slider(loc.x, loc.y, width, height, label.c_str());
+	reference_to<Fl_Valuator>(pw).type(FL_HORIZONTAL);
+	reference_to<Fl_Valuator>(pw).step(1.0);
+	reference_to<Fl_Valuator>(pw).range(0, 100);
 	own = &win;
 }
 
@@ -128,6 +131,17 @@ int Slider::get_val()
 void Slider::set_val(int input)
 {
 	reference_to<Fl_Valuator>(pw).value(input);
+	return;
+}
+//------------------------------------------------------------------------------
+bool Slider::is_changed()
+{
+	return reference_to<Fl_Valuator>(pw).changed();
+}
+
+//------------------------------------------------------------------------------
+void Slider::set_range(int min, int max){
+	reference_to<Fl_Valuator>(pw).range(min, max);
 	return;
 }
 

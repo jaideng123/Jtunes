@@ -150,8 +150,10 @@ namespace Graph_lib {
 		Slider(Point xy, int w, int h, const string& s)
 		:Widget(xy, w, h, s, 0) { }
 		int get_val();
+		bool is_changed();
 		void set_val(int input);
 		void attach(Window& win);
+		void set_range(int min, int max);
 	};
 
 //------------------------------------------------------------------------------

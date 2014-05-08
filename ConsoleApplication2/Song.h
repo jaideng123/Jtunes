@@ -26,6 +26,7 @@ private:
 	string artist;
 	string album;
 	uint32 length;
+	int volume;
 
 public:
 	Song(){
@@ -59,6 +60,10 @@ public:
 		BASS_ChannelSetPosition(stream, BASS_POS_OGG, 0);
 	}
 	void pause(){//Pause song
+		long len = BASS_ChannelGetPosition(stream,BASS_POS_BYTE);
+		double time = BASS_ChannelBytes2Seconds(stream, len);
+		cout << time;
+		// the time length 
 		if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PLAYING){
 			BASS_ChannelPause(stream);
 		}
@@ -89,8 +94,29 @@ public:
 		name = ID3_GetTitle(&myTag);
 		tagHelper th(location.c_str());
 		length = th.getTrackLength();
-
-
+	}
+	void setVolume(int level){
+		if (level >= 0 || level <= 100){
+			BASS_ChannelSetAttribute(stream, BASS_ATTRIB_VOL, (level / 100.0));
+			volume = level;
+		}
+		else
+			return;
+	}
+	int getLength(){//get length in seconds
+		long len = BASS_ChannelGetLength(stream, BASS_POS_BYTE);
+		double time = BASS_ChannelBytes2Seconds(stream, len);
+		return time;
+	}
+	int getPos(){//get current position in seconds
+		long len = BASS_ChannelGetPosition(stream, BASS_POS_BYTE);
+		double time = BASS_ChannelBytes2Seconds(stream, len);
+		return time;
+	}
+	void setPos(int pos){//set position in seconds
+		long time = BASS_ChannelSeconds2Bytes(stream, pos);
+		BASS_ChannelSetPosition(stream, BASS_POS_BYTE, time);
+		return;
 	}
 
 };

@@ -50,15 +50,21 @@ private:
 	Button clearIndex_button;
 
 	Out_box songName;
+	Out_box currTime;
+	Out_box endTime;
 
 	Vector_ref<Out_box> nameList;
 	Vector_ref<Out_box> artList;
 	Vector_ref<Out_box> albList;
+	
+	Slider progBar;
+	Slider volumeSlider;
 
 	//find a folder to read from
 	string fileChooser();
 	vector<string> fileCollect(string indexFile);
 	void fileAdd(string newDir, string indexFile);
+	string seconds2Minutes(int time);
 
 	static void cb_exit(Address, Address pw);
 	void exit();

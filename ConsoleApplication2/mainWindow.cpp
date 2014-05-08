@@ -9,19 +9,23 @@ using namespace Graph_lib;
 mainWindow::mainWindow(Point xy, int w, int h, const string& title)
 	:Window(xy,w,h,title),
 	exit_button(Point((x_max() - 77), 0), 70, 20, "Quit", cb_exit),
-	next_button(Point((x_max() / 2) + 40, 30), 70, 20, "Next", cb_next),
-	prev_button(Point((x_max() / 2) - 130, 30), 70, 20, "Previous", cb_prev),
-	pause_button(Point((x_max() / 2)-60, 30), 100, 20, "Pause", cb_pause),
-	play_button(Point((x_max() / 2) - 60, 30), 100, 20, "Play", cb_pause),
+	next_button(Point((x_max() / 2)+10, 30), 80, 30, "Next", cb_next),
+	prev_button(Point((x_max() / 2) - 140, 30), 80, 30, "Previous", cb_prev),
+	pause_button(Point((x_max() / 2) - 60, 30), 70, 30, "Pause", cb_pause),
+	play_button(Point((x_max() / 2) - 60, 30), 70, 30, "Play", cb_pause),
 	nextPage_button(Point(690, 95), 70, 20, "--->", cb_nextPage),
 	prevPage_button(Point(620, 95), 70, 20, "<---", cb_prevPage),
 	clearIndex_button(Point(0, 40), 70, 20, "Clear Lib.", cb_clearIndex),
+	addFile_button(Point(0, 20), 70, 20, "Add File", cb_addFile),
+	volumeSlider(Point(700, 40), 150, 20, "Volume"),
+	progBar(Point(320, 5), 300, 20, ""),
 	songName(Point((x_max() / 2) - 150, 70),250,20,"Current Song:"),
+	currTime(Point(270, 5), 50, 20, ""),
+	endTime(Point(620, 5), 50, 20, ""),
 	titleLabel(Point(15, 110),"Title"),
 	artLabel(Point(270, 110), "Artist"),
 	albLabel(Point(450, 110), "Album"),
-	noSongs(Point((x_max() / 2) - 150, 70), "Library is empty, click add file to add songs"),
-	addFile_button(Point(0, 20), 70, 20, "Add File", cb_addFile)
+	noSongs(Point((x_max() / 2) - 150, 70), "Library is empty, click add file to add songs")
 {
 	lockSize();//set up window
 	removeX();
@@ -33,12 +37,9 @@ mainWindow::mainWindow(Point xy, int w, int h, const string& title)
 	for (int i = 0; i < dir.size(); ++i){
 		searchDirectory(dir[i], songVec);
 	}
-
-
 	int index = 0;
 	while (index < songVec.size()){
 		for (int i = 0; i < 25 && index < songVec.size(); ++i){//Set up outboxes for songs
-			cout << albList.size()<<endl;
 			nameList.push_back(new Out_box(Point(15, (120 + i * 18)), 250, 20, ""));
 			artList.push_back(new Out_box(Point(270, (120 + i * 18)), 170, 20, ""));
 			albList.push_back(new Out_box(Point(450, (120 + i * 18)), 220, 20, ""));
@@ -60,8 +61,15 @@ mainWindow::mainWindow(Point xy, int w, int h, const string& title)
 		attach(next_button);
 		attach(prev_button);
 		attach(play_button);
-		attach(nextPage_button);
-		attach(prevPage_button);
+		if (songVec.size() > 24){
+			attach(nextPage_button);
+			attach(prevPage_button);
+		}
+		attach(progBar);
+		attach(currTime);
+		attach(endTime);
+		attach(volumeSlider);
+		volumeSlider.set_val(50);
 		attach(songName);
 		titleLabel.set_font_size(16);
 		attach(titleLabel);
@@ -81,11 +89,14 @@ void mainWindow::main_loop()
 	int playIndex = 0;
 	int pageIndex = 0;
 	int pageLimit = ceil((songVec.size() / 25.0));
-	
+	progBar.set_range(0, songVec[playIndex].getLength());
+	endTime.put(seconds2Minutes(songVec[playIndex].getLength()));
 	while (winState != goQuit){
 		button_pushed = false;
 		while (!button_pushed){
 			if (songVec.size() > 0){
+				progBar.set_val(songVec[playIndex].getPos());
+				currTime.put(seconds2Minutes(songVec[playIndex].getPos()));
 				if (songVec[playIndex].isOver()){//checks for end of song
 					songVec[playIndex].stop();
 					nameList[playIndex].unhighlight();
@@ -99,6 +110,7 @@ void mainWindow::main_loop()
 						nameList[playIndex].highlight();
 						artList[playIndex].highlight();
 						albList[playIndex].highlight();
+						songVec[playIndex].setVolume(volumeSlider.get_val());
 					}
 					else{
 						playIndex = (playIndex + 1) % songVec.size();
@@ -106,6 +118,9 @@ void mainWindow::main_loop()
 						detach(pause_button);
 						attach(play_button);
 					}
+				}
+				if (volumeSlider.is_changed() == true){
+					songVec[playIndex].setVolume(volumeSlider.get_val());
 				}
 			}
 			Fl::check();//wait but also check for end of song
@@ -115,7 +130,6 @@ void mainWindow::main_loop()
 				detach(play_button);
 				attach(pause_button);
 			}
-
 			songVec[playIndex].stop();
 			nameList[playIndex].unhighlight();
 			artList[playIndex].unhighlight();
@@ -126,6 +140,9 @@ void mainWindow::main_loop()
 			nameList[playIndex].highlight();
 			artList[playIndex].highlight();
 			albList[playIndex].highlight();
+			songVec[playIndex].setVolume(volumeSlider.get_val());
+			progBar.set_range(0, songVec[playIndex].getLength());
+			endTime.put(seconds2Minutes(songVec[playIndex].getLength()));
 		}
 		else if (winState == goPrev){//previous song
 			if (!songVec[playIndex].isActive()){
@@ -145,6 +162,9 @@ void mainWindow::main_loop()
 			nameList[playIndex].highlight();
 			artList[playIndex].highlight();
 			albList[playIndex].highlight();
+			songVec[playIndex].setVolume(volumeSlider.get_val());
+			progBar.set_range(0, songVec[playIndex].getLength());
+			endTime.put(seconds2Minutes(songVec[playIndex].getLength()));
 		}
 		else if (winState == goPause){//Pause current Song
 			if (songVec[playIndex].isActive()){
@@ -250,6 +270,21 @@ vector<string> mainWindow::fileCollect(string indexFile){
 		}
 	}
 	return out;
+}
+
+string mainWindow::seconds2Minutes(int seconds){
+	int minutes = 0;
+	ostringstream Convert;
+	while (seconds >= 60){
+		++minutes;
+		seconds -= 60;
+	}
+	if (minutes > 0)
+		Convert << minutes << ":" << seconds;
+	else
+		Convert << seconds;
+	return Convert.str();
+
 }
 
 void mainWindow::fileAdd(string newDir,string indexFile){
