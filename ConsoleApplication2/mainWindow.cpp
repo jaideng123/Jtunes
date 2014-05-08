@@ -43,6 +43,15 @@ mainWindow::mainWindow(Point xy, int w, int h, const string& title)
 			nameList.push_back(new Out_box(Point(15, (120 + i * 18)), 250, 20, ""));
 			artList.push_back(new Out_box(Point(270, (120 + i * 18)), 170, 20, ""));
 			albList.push_back(new Out_box(Point(450, (120 + i * 18)), 220, 20, ""));
+			//doing this prevents a memory error caused by
+			attach(nameList[index]);
+			attach(artList[index]);
+			//going to a song on the next page before 
+			attach(albList[index]);
+			detach(nameList[index]);
+			//looking at it first
+			detach(artList[index]);
+			detach(albList[index]);
 			++index;
 		}
 	}
@@ -95,6 +104,8 @@ void mainWindow::main_loop()
 		button_pushed = false;
 		while (!button_pushed){
 			if (songVec.size() > 0){
+				if (abs(songVec[playIndex].getPos() - progBar.get_val()) > 1)
+					cout << "changed" << endl;
 				progBar.set_val(songVec[playIndex].getPos());
 				currTime.put(seconds2Minutes(songVec[playIndex].getPos()));
 				if (songVec[playIndex].isOver()){//checks for end of song
@@ -134,6 +145,7 @@ void mainWindow::main_loop()
 			nameList[playIndex].unhighlight();
 			artList[playIndex].unhighlight();
 			albList[playIndex].unhighlight();
+
 			playIndex = (playIndex + 1) % songVec.size();
 			songVec[playIndex].play();
 			songName.put(songVec[playIndex].getName());
@@ -155,8 +167,9 @@ void mainWindow::main_loop()
 			albList[playIndex].unhighlight();
 			if (playIndex != 0)
 				playIndex = (playIndex - 1) % songVec.size();
-			else
+			else{
 				playIndex = songVec.size() - 1;
+			}
 			songVec[playIndex].play();
 			songName.put(songVec[playIndex].getName());
 			nameList[playIndex].highlight();

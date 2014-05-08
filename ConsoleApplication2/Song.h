@@ -37,7 +37,6 @@ public:
 		stream = BASS_StreamCreateFile(FALSE, tempLoc.c_str(), 0, 0, 0);
 		location = tempLoc;
 		pullMetaData();
-		cout << length << endl;
 		if (name == ""){
 			if (tempLoc.find("\\") != string::npos || tempLoc.find("/") != string::npos)
 				name = tempLoc.substr(tempLoc.find_last_of("\\/")+1, tempLoc.size() - 1);
@@ -60,9 +59,6 @@ public:
 		BASS_ChannelSetPosition(stream, BASS_POS_OGG, 0);
 	}
 	void pause(){//Pause song
-		long len = BASS_ChannelGetPosition(stream,BASS_POS_BYTE);
-		double time = BASS_ChannelBytes2Seconds(stream, len);
-		cout << time;
 		// the time length 
 		if (BASS_ChannelIsActive(stream) == BASS_ACTIVE_PLAYING){
 			BASS_ChannelPause(stream);
