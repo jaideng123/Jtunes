@@ -1,4 +1,4 @@
-jPlayer
+Jtunes
 =======
 
 Music Player w/GUI
