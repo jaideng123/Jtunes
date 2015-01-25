@@ -1,4 +1,4 @@
-Jtunes
+Juke
 =======
 
 Music Player w/GUI
